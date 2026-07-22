@@ -388,6 +388,7 @@ ol.form ul {
 .uifield-range input[type="range"] {
 	flex: 1 1 auto;
 	min-width: 0;
+	margin: 0;
 }
 
 .uifield-range-value {

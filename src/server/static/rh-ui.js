@@ -1,13 +1,41 @@
 
 var rhui = {
-	_formatRangeValue: function (settings, value) {
-		var prefix = settings.html_attributes.value_prefix || '';
-		var suffix = settings.html_attributes.value_suffix || '';
+	_formatRangeValue: function (settings, field, value) {
+		var htmlAttributes = settings.html_attributes || {};
+		var prefix = htmlAttributes.value_prefix != null
+			? htmlAttributes.value_prefix
+			: field.attr('data-value-prefix') || '';
+		var suffix = htmlAttributes.value_suffix != null
+			? htmlAttributes.value_suffix
+			: field.attr('data-value-suffix') || '';
+		var decimals = htmlAttributes.value_decimals != null
+			? htmlAttributes.value_decimals
+			: field.attr('data-value-decimals');
+		if (decimals != null && value !== '' && !isNaN(value)) {
+			value = Number(value).toFixed(parseInt(decimals, 10));
+		}
 		return prefix + value + suffix;
 	},
-	_updateRangeValue: function (settings, field) {
+	_updateRangeValue: function (field, settings, value) {
+		settings = settings || field.data('rhui-range-settings') || {};
+		if (value == null) {
+			value = field.val();
+		}
 		field.closest('.uifield-range').find('output.uifield-range-value')
-			.text(this._formatRangeValue(settings, field.val()));
+			.text(this._formatRangeValue(settings, field, value));
+	},
+	updateRangeValue: function (field, value) {
+		this._updateRangeValue(field, null, value);
+	},
+	_bindRangeValue: function (field, settings) {
+		field.data('rhui-range-settings', settings || {});
+		if (!field.data('rhui-range-bound')) {
+			var rhuiObj = this;
+			field.on('input change', function () {
+				rhuiObj.updateRangeValue($(this));
+			});
+			field.data('rhui-range-bound', true);
+		}
 	},
 	_modelField: function (field_options) {
 		var settings = {
@@ -128,6 +156,7 @@ var rhui = {
 			var valueEl = $('<output>')
 				.addClass('uifield-range-value')
 				.attr('for', settings.id);
+			this._bindRangeValue(field, settings);
 
 			if ('min' in settings.html_attributes) {
 				field.attr('min', settings.html_attributes.min)
@@ -142,10 +171,6 @@ var rhui = {
 			rangeWrap.append(field);
 			rangeWrap.append(valueEl);
 			wrapper.append(rangeWrap);
-			var rhuiObj = this;
-			field.on('input change', function () {
-				rhuiObj._updateRangeValue(settings, $(this));
-			});
 		} else if (settings.field_type == 'select') {
 			var field = $('<select>')
 
@@ -288,7 +313,7 @@ var rhui = {
 			element.val(settings.value);
 		}
 		if (settings.field_type == 'range') {
-			this._updateRangeValue(settings, element);
+			this._updateRangeValue(element, settings);
 		}
 
 		for (var idx in settings.data) {
@@ -322,6 +347,11 @@ var rhui = {
 }
 
 $(document).ready(function () {
+	$('.uifield-range input[type="range"]').each(function () {
+		rhui._bindRangeValue($(this));
+		rhui.updateRangeValue($(this));
+	});
+
 	$(document).on('click', '.quickbutton', function (event) {
 		var data = {
 			id: $(this).data('btn_id'),
