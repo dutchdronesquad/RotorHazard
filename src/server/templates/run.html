@@ -214,9 +214,8 @@
 		$('#display_laps_reversed').prop("checked", rotorhazard.display_laps_reversed);
 
 		if ('{{ getConfig('LED', 'ledBrightness') }}' != 'False') {
-			var ledBrightness = {{ getConfig('LED', 'ledBrightness') }};
-			$('#set_led_brightness').val(brightness_logsl.position(ledBrightness));
-			rhui.updateRangeValue($('#set_led_brightness'), Math.round(ledBrightness / 255 * 100));
+			$('#set_led_brightness').val(brightness_logsl.position( {{ getConfig('LED', 'ledBrightness') }} ));
+			rhui.updateRangeValue($('#set_led_brightness'));
 		}
 
 		// set up node local store
@@ -2011,11 +2010,6 @@
 			})
 		})
 
-		$('#set_led_brightness').on('input', function (event) {
-			var val = brightness_logsl.value($(this).val());
-			rhui.updateRangeValue($(this), Math.round(val / 255 * 100));
-		});
-
 		$('#set_led_brightness').change(function (event) {
 			var val = brightness_logsl.value($(this).val());
 			// emit data
@@ -3359,7 +3353,7 @@
 					<label for="set_led_brightness">{{ __('LED Brightness') }}</label>
 				</div>
 				<div class="uifield-range">
-					<input type="range" id="set_led_brightness" min="1" max="25" data-value-suffix="%">
+					<input type="range" id="set_led_brightness" min="1" max="25">
 					<output class="uifield-range-value" id="led_brightness_value" for="set_led_brightness"></output>
 				</div>
 			</li>
